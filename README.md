@@ -2,6 +2,8 @@
 
 This is a protoype MCP App to test draft spec support on an experimental build of Apollo MCP Server, built with Apollo Server v5, Apollo Connectors, and Apollo MCP Server.
 
+The experimental build of the mcp server is [located here](https://github.com/amandamartin-dev/apollo-mcp-server-testing)
+
 ## Prerequisites
 
 - **Node.js 20.0.0+** (required for Apollo Server v5)
