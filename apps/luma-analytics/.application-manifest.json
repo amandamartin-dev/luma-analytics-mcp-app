@@ -1,0 +1,24 @@
+{
+  "format": "apollo-ai-app-manifest",
+  "version": "1",
+  "name": "luma-analytics",
+  "description": "Interactive dashboard for Luma event analytics",
+  "hash": "v1",
+  "resource": "dashboard.html",
+  "csp": {
+    "connect": [],
+    "resource": []
+  },
+  "operations": [
+    {
+      "body": "query GetEventAnalytics($calendarId: ID, $limit: Int = 10) {\n  eventAnalytics(calendarId: $calendarId, limit: $limit) {\n    totalEvents\n    totalAttendees\n    averageAttendeesPerEvent\n    checkInRate\n    events {\n      id\n      name\n      date\n      attendeeCount\n      checkedInCount\n      location\n    }\n  }\n}",
+      "tools": [
+        {
+          "name": "analyze_events",
+          "description": "Analyze Luma events with interactive visualization dashboard",
+          "visibility": ["model", "app"]
+        }
+      ]
+    }
+  ]
+}

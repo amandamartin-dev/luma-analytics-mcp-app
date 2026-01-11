@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>Luma Event Analytics</title>
+  <style>
+    :root {
+      --color-background-primary: light-dark(#ffffff, #171717);
+      --color-background-secondary: light-dark(#f5f5f5, #262626);
+      --color-text-primary: light-dark(#171717, #fafafa);
+      --color-text-secondary: light-dark(#525252, #a3a3a3);
+      --color-border-primary: light-dark(#e5e5e5, #404040);
+      --font-sans: system-ui, -apple-system, sans-serif;
+      --border-radius-md: 8px;
+      --border-radius-sm: 4px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-background-primary);
+      color: var(--color-text-primary);
+      padding: 16px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: var(--color-text-secondary);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--color-background-secondary);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-md);
+      padding: 16px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .chart-container {
+      background: var(--color-background-secondary);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-md);
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+    .chart-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      height: 200px;
+      gap: 8px;
+    }
+
+    .bar-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .bar {
+      width: 100%;
+      background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+      border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+      transition: opacity 0.2s;
+      position: relative;
+    }
+
+    .bar:hover {
+      opacity: 0.8;
+    }
+
+    .bar-label {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .bar-value {
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .event-list {
+      background: var(--color-background-secondary);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--border-radius-md);
+      padding: 16px;
+    }
+
+    .event-item {
+      padding: 12px;
+      border-bottom: 1px solid var(--color-border-primary);
+    }
+
+    .event-item:last-child {
+      border-bottom: none;
+    }
+
+    .event-name {
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .event-meta {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      display: flex;
+      gap: 16px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 48px;
+      color: var(--color-text-secondary);
+    }
+
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: var(--border-radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Event Analytics Dashboard</h1>
+    <p class="subtitle">Real-time insights from your Luma events</p>
+
+    <div id="loading" class="loading">
+      <p>Loading analytics...</p>
+    </div>
+
+    <div id="dashboard" style="display: none;">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Events</div>
+          <div class="stat-value" id="stat-events">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Attendees</div>
+          <div class="stat-value" id="stat-attendees">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg per Event</div>
+          <div class="stat-value" id="stat-avg">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Checked In</div>
+          <div class="stat-value" id="stat-checkin">0%</div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">Registrations by Event</div>
+        <div class="bar-chart" id="bar-chart"></div>
+      </div>
+
+      <div class="event-list">
+        <h2 class="chart-title">Recent Events</h2>
+        <div id="event-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // MCP App Communication
+    let resizeObserver = null;
+
+    async function initializeMCP() {
+      try {
+        const initResponse = await sendMCPRequest('ui/initialize', {
+          appInfo: {
+            name: 'luma-analytics-ui',
+            version: '1.0.0',
+          },
+          appCapabilities: {},
+          protocolVersion: '2025-06-18',
+        });
+
+        console.log('MCP initialized:', initResponse);
+
+        if (initResponse.hostContext?.styles?.variables) {
+          applyHostStyleVariables(initResponse.hostContext.styles.variables);
+        }
+
+        if (initResponse.hostContext?.styles?.css?.fonts) {
+          applyHostFonts(initResponse.hostContext.styles.css.fonts);
+        }
+
+        sendMCPNotification('ui/notifications/initialized', {});
+
+        if (initResponse.hostCapabilities?.resize) {
+          setupAutoResize();
+          console.log('Auto-resize enabled (host supports it)');
+        } else {
+          console.log('Auto-resize disabled (host does not advertise support)');
+        }
+
+        window.addEventListener('message', handleMCPMessage);
+
+      } catch (error) {
+        console.error('Failed to initialize MCP:', error);
+        document.getElementById('loading').innerHTML = '<p>Failed to initialize: ' + error.message + '</p>';
+      }
+    }
+
+    function applyHostStyleVariables(variables) {
+      const root = document.documentElement;
+      Object.entries(variables).forEach(([key, value]) => {
+        if (value) {
+          root.style.setProperty(key, value);
+        }
+      });
+      console.log('Applied host style variables');
+    }
+
+    function applyHostFonts(fontsCss) {
+      const style = document.createElement('style');
+      style.textContent = fontsCss;
+      document.head.appendChild(style);
+      console.log('Applied host fonts');
+    }
+
+    function setupAutoResize() {
+      let lastWidth = 0;
+      let lastHeight = 0;
+
+      resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const width = entry.contentRect.width;
+          const height = entry.contentRect.height;
+
+          // Only send notification if size actually changed significantly (avoid resize loops)
+          if (Math.abs(width - lastWidth) > 1 || Math.abs(height - lastHeight) > 1) {
+            lastWidth = width;
+            lastHeight = height;
+            sendMCPNotification('ui/notifications/size-changed', {
+              width: Math.round(width),
+              height: Math.round(height)
+            });
+          }
+        }
+      });
+
+      resizeObserver.observe(document.body);
+      console.log('Auto-resize enabled');
+    }
+
+    function sendMCPRequest(method, params) {
+      return new Promise((resolve, reject) => {
+        const id = Date.now();
+        const message = {
+          jsonrpc: '2.0',
+          id,
+          method,
+          params,
+        };
+
+        const handler = (event) => {
+          const data = event.data;
+          if (data?.id === id) {
+            window.removeEventListener('message', handler);
+            if (data?.result) {
+              resolve(data.result);
+            } else if (data?.error) {
+              reject(new Error(data.error.message));
+            }
+          }
+        };
+
+        window.addEventListener('message', handler);
+        window.parent.postMessage(message, '*');
+      });
+    }
+
+    function sendMCPNotification(method, params) {
+      const message = {
+        jsonrpc: '2.0',
+        method,
+        params,
+      };
+      window.parent.postMessage(message, '*');
+    }
+
+    function handleMCPMessage(event) {
+      const data = event.data;
+      if (!data?.method) return;
+
+      const handlers = {
+        'ui/notifications/tool-input': () => {
+          document.getElementById('loading').innerHTML = '<p>Loading analytics data...</p>';
+        },
+        'ui/notifications/tool-result': () => {
+          handleToolResult(data.params);
+        },
+        'ui/notifications/tool-cancelled': () => {
+          document.getElementById('loading').innerHTML = '<p>Analysis cancelled: ' + data.params.reason + '</p>';
+        },
+        'ui/notifications/host-context-changed': () => {
+          if (data.params.styles?.variables) {
+            applyHostStyleVariables(data.params.styles.variables);
+          }
+        },
+        'ui/resource-teardown': () => {
+          handleTeardown(data.id, data.params.reason);
+        }
+      };
+
+      handlers[data.method]?.();
+    }
+
+    function handleTeardown(requestId, reason) {
+      console.log('App is being torn down:', reason);
+
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+        resizeObserver = null;
+      }
+
+      window.removeEventListener('message', handleMCPMessage);
+
+      // Respond to acknowledge teardown
+      window.parent.postMessage({
+        jsonrpc: '2.0',
+        id: requestId,
+        result: {}
+      }, '*');
+    }
+
+    function renderDashboard(analyticsData) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+
+      // Handle both formats: direct GraphQL response or wrapped in eventAnalytics
+      const data = analyticsData.eventAnalytics || analyticsData;
+      const events = data.events || [];
+
+      // Use provided stats or calculate from events
+      const totalEvents = data.totalEvents ?? events.length;
+      const totalAttendees = data.totalAttendees ?? events.reduce((sum, e) => sum + (e.attendeeCount || e.attendees || 0), 0);
+      const avgAttendees = Math.round(data.averageAttendeesPerEvent ?? (totalAttendees / totalEvents || 0));
+      const checkinRate = Math.round((data.checkInRate ?? 0) * 100);
+
+      document.getElementById('stat-events').textContent = totalEvents;
+      document.getElementById('stat-attendees').textContent = totalAttendees;
+      document.getElementById('stat-avg').textContent = avgAttendees;
+      document.getElementById('stat-checkin').textContent = `${checkinRate}%`;
+
+      renderBarChart(events);
+      renderEventList(events);
+    }
+
+    function renderBarChart(events) {
+      const container = document.getElementById('bar-chart');
+
+      if (!events || events.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--color-text-secondary);">No events to display</p>';
+        return;
+      }
+
+      const maxAttendees = Math.max(...events.map(e => e.attendeeCount || e.attendees || 0));
+
+      container.innerHTML = events.map((event, index) => {
+        const attendeeCount = event.attendeeCount || event.attendees || 0;
+        const heightPercent = maxAttendees > 0 ? (attendeeCount / maxAttendees) * 100 : 0;
+        const eventLabel = event.name ? event.name.substring(0, 15) : `Event ${index + 1}`;
+
+        return `
+          <div class="bar-group">
+            <div class="bar" style="height: ${heightPercent}%">
+              <div class="bar-value">${attendeeCount}</div>
+            </div>
+            <div class="bar-label" title="${event.name || ''}">${eventLabel}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderEventList(events) {
+      const container = document.getElementById('event-list');
+
+      if (!events || events.length === 0) {
+        container.innerHTML = '<p style="text-align: center; padding: 24px; color: var(--color-text-secondary);">No events found</p>';
+        return;
+      }
+
+      container.innerHTML = events.map(event => {
+        const attendeeCount = event.attendeeCount || event.attendees || 0;
+        const checkedInCount = event.checkedInCount || event.checkedIn || 0;
+        const date = new Date(event.date).toLocaleDateString();
+        const checkinRate = attendeeCount > 0 ? Math.round((checkedInCount / attendeeCount) * 100) : 0;
+
+        return `
+          <div class="event-item">
+            <div class="event-name">${event.name || 'Unnamed Event'}</div>
+            <div class="event-meta">
+              <span>📅 ${date}</span>
+              <span>👥 ${attendeeCount} registered</span>
+              <span>✅ ${checkinRate}% checked in</span>
+              ${event.location ? `<span>📍 ${event.location}</span>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function parseToolResultData(result) {
+      let data;
+
+      // Try structuredContent first (Apollo MCP Server format)
+      if (result.structuredContent) {
+        data = result.structuredContent;
+      }
+      // Try content array (standard MCP format)
+      else if (result.content?.length > 0) {
+        const firstContent = result.content[0];
+
+        if (typeof firstContent.text === 'string') {
+          try {
+            data = JSON.parse(firstContent.text);
+          } catch (e) {
+            console.error('Failed to parse JSON:', e);
+          }
+        } else if (typeof firstContent === 'string') {
+          try {
+            data = JSON.parse(firstContent);
+          } catch (e) {
+            console.error('Failed to parse JSON:', e);
+          }
+        }
+      }
+
+      // Unwrap Apollo MCP Server's nested structure { result: { data: { ... } } }
+      if (data?.result?.data) {
+        data = data.result.data;
+      }
+
+      // Fallback: check if result itself has eventAnalytics
+      if (!data && result.eventAnalytics) {
+        data = { eventAnalytics: result.eventAnalytics };
+      }
+
+      return data;
+    }
+
+    function handleToolResult(result) {
+      const analyticsData = parseToolResultData(result);
+
+      if (analyticsData) {
+        renderDashboard(analyticsData);
+      } else {
+        document.getElementById('loading').innerHTML = '<p style="color: red;">❌ No data received</p>';
+      }
+    }
+
+    initializeMCP();
+  </script>
+</body>
+</html>

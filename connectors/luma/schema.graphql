@@ -1,0 +1,236 @@
+# Note to AI Friends: This is an Apollo Connectors schema. You should use your connectors-spec MCP tool if you have it available before editing this file.
+
+extend schema
+  @link(url: "https://specs.apollo.dev/federation/v2.12", import: ["@shareable"])
+  @link(url: "https://specs.apollo.dev/connect/v0.3", import: ["@source", "@connect"])
+  @source(
+    name: "luma_api"
+    http: {
+      baseURL: "https://public-api.luma.com"
+      headers: [
+        { name: "x-luma-api-key", value: "{$env.LUMA_API_KEY}" }
+      ]
+    }
+  )
+
+type Query {
+  """Get list of events with pagination support"""
+  events(
+    calendarId: ID
+    seriesId: ID
+    limit: Int
+    after: String
+  ): EventsConnection @connect(
+    source: "luma_api"
+    http: {
+      GET: "/v1/calendar/list-events"
+      queryParams: """
+        calendar_id: $args.calendarId
+        series_id: $args.seriesId
+        pagination_limit: $args.limit
+        pagination_cursor: $args.after
+      """
+    }
+    selection: """
+      entries {
+        apiId: api_id
+        event {
+          id
+          calendarId: calendar_id
+          userId: user_id
+          createdAt: created_at
+          coverUrl: cover_url
+          name
+          description
+          descriptionMd: description_md
+          startAt: start_at
+          durationInterval: duration_interval
+          endAt: end_at
+          geoAddressJson: geo_address_json {
+            address
+            city
+            region
+            country
+            cityState: city_state
+            fullAddress: full_address
+            googleMapsPlaceId: google_maps_place_id
+            appleMapsPlaceId: apple_maps_place_id
+            description
+          }
+          geoLatitude: geo_latitude
+          geoLongitude: geo_longitude
+          url
+          timezone
+          visibility
+          meetingUrl: meeting_url
+          zoomMeetingUrl: zoom_meeting_url
+        }
+        tags
+      }
+      hasMore: has_more
+      nextCursor: next_cursor
+    """
+  )
+
+  """Get guests for a specific event"""
+  eventGuests(
+    eventId: ID!
+    limit: Int
+    after: String
+  ): GuestsConnection @connect(
+    source: "luma_api"
+    http: {
+      GET: "/v1/event/get-guests"
+      queryParams: """
+        event_id: $args.eventId
+        pagination_limit: $args.limit
+        pagination_cursor: $args.after
+      """
+    }
+    selection: """
+      entries {
+        apiId: api_id
+        guest {
+          id
+          apiId: api_id
+          approvalStatus: approval_status
+          createdAt: created_at
+          customSource: custom_source
+          ethAddress: eth_address
+          invitedAt: invited_at
+          joinedAt: joined_at
+          phoneNumber: phone_number
+          registeredAt: registered_at
+          solanaAddress: solana_address
+          userApiId: user_api_id
+          checkedInAt: checked_in_at
+          userId: user_id
+          userName: user_name
+          userEmail: user_email
+          userFirstName: user_first_name
+          userLastName: user_last_name
+          name
+          email
+          checkInQrCode: check_in_qr_code
+          eventTickets: event_tickets {
+            amount
+            amountDiscount: amount_discount
+            amountTax: amount_tax
+            id
+            apiId: api_id
+            checkedInAt: checked_in_at
+            currency
+            eventTicketTypeId: event_ticket_type_id
+            isCaptured: is_captured
+            name
+          }
+        }
+      }
+      hasMore: has_more
+      nextCursor: next_cursor
+    """
+  )
+}
+
+"""Connection type for paginated events"""
+type EventsConnection {
+  entries: [EventEntry!]!
+  hasMore: Boolean!
+  nextCursor: String
+}
+
+"""Event entry wrapper"""
+type EventEntry {
+  apiId: ID!
+  event: Event!
+  tags: [String!]!
+}
+
+"""Luma Event"""
+type Event {
+  id: ID!
+  calendarId: ID!
+  userId: ID!
+  createdAt: String!
+  coverUrl: String
+  name: String!
+  description: String
+  descriptionMd: String
+  startAt: String!
+  durationInterval: String
+  endAt: String
+  geoAddressJson: GeoAddress
+  geoLatitude: String
+  geoLongitude: String
+  url: String!
+  timezone: String!
+  visibility: String!
+  meetingUrl: String
+  zoomMeetingUrl: String
+}
+
+"""Geographic address information"""
+type GeoAddress @shareable {
+  address: String
+  city: String
+  region: String
+  country: String
+  cityState: String
+  fullAddress: String
+  googleMapsPlaceId: String
+  appleMapsPlaceId: String
+  description: String
+}
+
+"""Connection type for paginated guests"""
+type GuestsConnection {
+  entries: [GuestEntry!]!
+  hasMore: Boolean!
+  nextCursor: String
+}
+
+"""Guest entry wrapper"""
+type GuestEntry {
+  apiId: ID!
+  guest: Guest!
+}
+
+"""Event guest/attendee"""
+type Guest {
+  id: ID!
+  apiId: ID!
+  approvalStatus: String!
+  createdAt: String!
+  customSource: String
+  ethAddress: String
+  invitedAt: String
+  joinedAt: String
+  phoneNumber: String
+  registeredAt: String
+  solanaAddress: String
+  userApiId: ID
+  checkedInAt: String
+  userId: ID
+  userName: String
+  userEmail: String
+  userFirstName: String
+  userLastName: String
+  name: String!
+  email: String!
+  checkInQrCode: String
+  eventTickets: [EventTicket!]!
+}
+
+"""Event ticket information"""
+type EventTicket @shareable {
+  amount: Int!
+  amountDiscount: Int!
+  amountTax: Int!
+  id: ID!
+  apiId: ID!
+  checkedInAt: String
+  currency: String!
+  eventTicketTypeId: ID!
+  isCaptured: Boolean!
+  name: String!
+}

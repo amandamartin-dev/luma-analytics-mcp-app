@@ -1,0 +1,27 @@
+extend schema
+  @link(url: "https://specs.apollo.dev/federation/v2.12", import: ["@key", "@shareable"])
+
+"""Analytics and aggregation layer for Luma events"""
+type Query {
+  """Get aggregated analytics for events"""
+  eventAnalytics(calendarId: ID, limit: Int): EventAnalytics
+}
+
+"""Aggregated analytics for events"""
+type EventAnalytics {
+  totalEvents: Int!
+  totalAttendees: Int!
+  averageAttendeesPerEvent: Float!
+  checkInRate: Float!
+  events: [EventSummary!]!
+}
+
+"""Summary information for an event"""
+type EventSummary {
+  id: ID!
+  name: String!
+  date: String!
+  attendeeCount: Int!
+  checkedInCount: Int!
+  location: String
+}

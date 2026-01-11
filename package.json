@@ -1,0 +1,36 @@
+{
+  "name": "luma-mcp-app",
+  "version": "1.0.0",
+  "description": "MCP App for Luma event analytics with Apollo Server and Apollo Connectors",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "rover dev --supergraph-config supergraph.yaml --mcp mcp.yaml",
+    "router": "rover dev --supergraph-config supergraph.yaml",
+    "start": "node src/server.js",
+    "mcp": "./apollo-mcp-server mcp.yaml",
+    "compose": "rover supergraph compose --config supergraph.yaml",
+    "test:connector": "rover connector test --config connectors/luma/connector.yaml"
+  },
+  "keywords": [
+    "mcp",
+    "apollo",
+    "graphql",
+    "luma",
+    "analytics"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@apollo/server": "^5.0.0",
+    "@apollo/subgraph": "^2.9.0",
+    "graphql": "^16.9.0",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@apollo/rover": "^0.30.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

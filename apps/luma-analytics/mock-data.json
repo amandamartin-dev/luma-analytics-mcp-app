@@ -1,0 +1,50 @@
+{
+  "eventAnalytics": {
+    "totalEvents": 5,
+    "totalAttendees": 287,
+    "averageAttendeesPerEvent": 57,
+    "checkInRate": 0.73,
+    "events": [
+      {
+        "id": "evt-001",
+        "name": "AI/ML Product Development Workshop",
+        "date": "2026-01-05T18:00:00Z",
+        "attendeeCount": 82,
+        "checkedInCount": 64,
+        "location": "San Francisco, CA"
+      },
+      {
+        "id": "evt-002",
+        "name": "GraphQL Best Practices Meetup",
+        "date": "2025-12-28T19:00:00Z",
+        "attendeeCount": 45,
+        "checkedInCount": 31,
+        "location": "New York, NY"
+      },
+      {
+        "id": "evt-003",
+        "name": "MCP Apps Developer Showcase",
+        "date": "2025-12-20T17:30:00Z",
+        "attendeeCount": 68,
+        "checkedInCount": 52,
+        "location": "Austin, TX"
+      },
+      {
+        "id": "evt-004",
+        "name": "Cloud Architecture Summit",
+        "date": "2025-12-15T16:00:00Z",
+        "attendeeCount": 53,
+        "checkedInCount": 38,
+        "location": "Seattle, WA"
+      },
+      {
+        "id": "evt-005",
+        "name": "TypeScript & Modern Web Dev",
+        "date": "2025-12-08T18:30:00Z",
+        "attendeeCount": 39,
+        "checkedInCount": 25,
+        "location": "Boston, MA"
+      }
+    ]
+  }
+}

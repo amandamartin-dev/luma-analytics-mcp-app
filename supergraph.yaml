@@ -1,0 +1,10 @@
+federation_version: =2.12.0
+subgraphs:
+  luma_connectors:
+    routing_url: http://localhost:4000
+    schema:
+      file: connectors/luma/schema.graphql
+  analytics:
+    routing_url: http://localhost:4001
+    schema:
+      file: src/schema.graphql
